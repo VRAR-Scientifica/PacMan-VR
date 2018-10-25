@@ -21,7 +21,6 @@ using UnityEngine.Assertions;
 /// on distance from the camera.
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
-[HelpURL("https://developers.google.com/vr/unity/reference/class/GvrControllerReticleVisual")]
 public class GvrControllerReticleVisual : MonoBehaviour {
   [Serializable]
   public struct FaceCameraData {

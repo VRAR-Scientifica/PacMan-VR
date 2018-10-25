@@ -2,58 +2,40 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class ClydeController : MonoBehaviour {
+public class ClydeController : MonoBehaviour
+{
 
-    public Transform Clyde;
+    public EditorPathScript PathToFollow;
 
-    public GameObject pos1;
-    public GameObject pos2;
-    public GameObject pos3;
-    public GameObject pos4;
-    public GameObject pos5;
-    public GameObject pos6;
+    public int CurrentWaypointID;
+    public float speed;
+    private float reachDistance = 1.0f;
+    public float rotationSpeed = 0.5f;
+    public string pathName;
 
-    public int num;
-    public float step;
-    // Use this for initialization
-    void Start () {
-        step = 3 * Time.deltaTime;
-	}
-	
-	// Update is called once per frame
-	void Update () {
-        StartCoroutine("TimeCheck");
-        //num = Random.Range(1, 7);
+    Vector3 last_position;
+    Vector3 current_position;
 
-            if (num == 1)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, pos1.transform.position, step);
-            }
-            if (num == 2)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, pos2.transform.position, 0.4f);
-            }
-            if (num == 3)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, pos3.transform.position, 0.4f);
-            }
-            if (num == 4)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, pos4.transform.position, 0.4f);
-            }
-            if (num == 5)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, pos5.transform.position, 0.4f);
-            }
-            if (num == 6)
-            {
-                transform.position = Vector3.MoveTowards(transform.position, pos6.transform.position, 0.4f);
-            } 
-    }
-
-    IEnumerator TimeCheck()
+    void Start()
     {
-        yield return new WaitForSeconds(3);
-        
+        //PathToFollow = GameObject.Find(pathName).GetComponent<EditorPathScript> ();
+        last_position = transform.position;
     }
+
+    void Update()
+    {
+        float distance = Vector3.Distance(PathToFollow.path_objs[CurrentWaypointID].position, transform.position);
+        transform.LookAt(PathToFollow.path_objs[CurrentWaypointID].position);
+        transform.position = Vector3.MoveTowards(transform.position, PathToFollow.path_objs[CurrentWaypointID].position, 3.0f * Time.deltaTime);
+
+        if (distance <= reachDistance)
+        {
+            CurrentWaypointID++;
+        }
+        if (CurrentWaypointID >= PathToFollow.path_objs.Count)
+        {
+            CurrentWaypointID = 0;
+        }
+    }
+
 }

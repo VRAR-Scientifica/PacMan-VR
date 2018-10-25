@@ -50,19 +50,14 @@ namespace GoogleVR.Demos {
     private const string METHOD_IS_DAYDREAM_READY = "isDaydreamReadyPlatform";
 
     private bool isDaydream = false;
-    private int activeControllerPointer = 0;
-    private static GvrControllerHand[] AllHands = {
-      GvrControllerHand.Right,
-      GvrControllerHand.Left,
-    };
 
     [Tooltip("Reference to GvrControllerMain")]
     public GameObject controllerMain;
     public static string CONTROLLER_MAIN_PROP_NAME = "controllerMain";
 
-    [Tooltip("Reference to GvrControllerPointers")]
-    public GameObject[] controllerPointers;
-    public static string CONTROLLER_POINTER_PROP_NAME = "controllerPointers";
+    [Tooltip("Reference to GvrControllerPointer")]
+    public GameObject controllerPointer;
+    public static string CONTROLLER_POINTER_PROP_NAME = "controllerPointer";
 
     [Tooltip("Reference to GvrReticlePointer")]
     public GameObject reticlePointer;
@@ -130,32 +125,6 @@ namespace GoogleVR.Demos {
     // Runtime switching enabled only in-editor.
     void Update() {
       UpdateStatusMessage();
-
-      // Scan all devices' buttons for button down, and switch the singleton pointer
-      // to the controller the user last clicked.
-      int newPointer = activeControllerPointer;
-
-      if (controllerPointers.Length > 1 && controllerPointers[1] != null) {
-        // Buttons that can trigger pointer switching.
-        GvrControllerButton buttonMask = GvrControllerButton.App | GvrControllerButton.TouchPadButton;
-        GvrTrackedController trackedController1 = controllerPointers[1].GetComponent<GvrTrackedController>();
-        foreach (var hand in AllHands) {
-          GvrControllerInputDevice device = GvrControllerInput.GetDevice(hand);
-          if (device.GetButtonDown(buttonMask)) {
-            // Match the button to our own controllerPointers list.
-            if (device == trackedController1.ControllerInputDevice) {
-              newPointer = 1;
-            } else {
-              newPointer = 0;
-            }
-            break;
-          }
-        }
-      }
-      if (newPointer != activeControllerPointer) {
-        activeControllerPointer = newPointer;
-        SetVRInputMechanism();
-      }
 
 #if !RUNNING_ON_ANDROID_DEVICE
       UpdateEmulatedPlatformIfPlayerSettingsChanged();
@@ -267,10 +236,8 @@ namespace GoogleVR.Demos {
       string controllerMessage = "";
       GvrPointerGraphicRaycaster graphicRaycaster =
         messageCanvas.GetComponent<GvrPointerGraphicRaycaster>();
-      GvrControllerInputDevice dominantDevice = GvrControllerInput.GetDevice(GvrControllerHand.Dominant);
-      GvrConnectionState connectionState = dominantDevice.State;
       // This is an example of how to process the controller's state to display a status message.
-      switch (connectionState) {
+      switch (GvrControllerInput.State) {
         case GvrConnectionState.Connected:
           break;
         case GvrConnectionState.Disconnected:
@@ -286,21 +253,21 @@ namespace GoogleVR.Demos {
           messageText.color = Color.yellow;
           break;
         case GvrConnectionState.Error:
-          controllerMessage = "ERROR: " + dominantDevice.ErrorDetails;
+          controllerMessage = "ERROR: " + GvrControllerInput.ErrorDetails;
           messageText.color = Color.red;
           break;
         default:
           // Shouldn't happen.
-          Debug.LogError("Invalid controller state: " + connectionState);
+          Debug.LogError("Invalid controller state: " + GvrControllerInput.State);
           break;
       }
       messageText.text = string.Format("{0}\n{1}", vrSdkWarningMessage, controllerMessage);
       if (graphicRaycaster != null) {
         graphicRaycaster.enabled =
-          !isVrSdkListEmpty || connectionState != GvrConnectionState.Connected;
+          !isVrSdkListEmpty || GvrControllerInput.State != GvrConnectionState.Connected;
       }
       messageCanvas.SetActive(isVrSdkListEmpty ||
-                              (connectionState != GvrConnectionState.Connected));
+                              (GvrControllerInput.State != GvrConnectionState.Connected));
 #endif  // !UNITY_ANDROID && !UNITY_IOS
     }
 
@@ -331,17 +298,17 @@ namespace GoogleVR.Demos {
       if (controllerMain != null) {
         controllerMain.SetActive(active);
       }
-      if (controllerPointers == null || controllerPointers.Length <= activeControllerPointer) {
+      if (controllerPointer == null) {
         return;
       }
-      controllerPointers[activeControllerPointer].SetActive(active);
+      controllerPointer.SetActive(active);
 
       // Update the pointer type only if this is currently activated.
       if (!active) {
         return;
       }
       GvrLaserPointer pointer =
-          controllerPointers[activeControllerPointer].GetComponentInChildren<GvrLaserPointer>(true);
+          controllerPointer.GetComponentInChildren<GvrLaserPointer>(true);
       if (pointer != null) {
         GvrPointerInputModule.Pointer = pointer;
       }

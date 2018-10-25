@@ -14,6 +14,7 @@ public class BlinkyController : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
-        transform.Translate(Vector3.MoveTowards(transform.position, target.transform.position, 3 * Time.deltaTime));
+        transform.LookAt(target);
+        transform.Translate(Vector3.forward * 5 * Time.deltaTime);
 	}
 }

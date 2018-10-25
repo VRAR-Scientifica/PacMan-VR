@@ -24,11 +24,12 @@ namespace GoogleVR.VideoDemo {
     public ButtonEvent OnAppDown;
 
     void Update() {
-      if (Gvr.Internal.ControllerUtils.AnyButtonUp(GvrControllerButton.App))
+      if (GvrControllerInput.AppButtonUp)
         OnAppUp.Invoke();
 
-      if (Gvr.Internal.ControllerUtils.AnyButtonDown(GvrControllerButton.App))
+      if (GvrControllerInput.AppButtonDown)
         OnAppDown.Invoke();
     }
+
   }
 }
